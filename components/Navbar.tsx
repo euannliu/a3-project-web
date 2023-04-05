@@ -12,7 +12,8 @@ import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
 import Tooltip from '@mui/material/Tooltip';
 import MenuItem from '@mui/material/MenuItem';
-import AdbIcon from '@mui/icons-material/Adb';
+
+const TITLE = 'A3-PROJECT'
 
 const pages = ['Chat', 'Pricing'];
 const settings = ['Profile', 'Account', 'Dashboard', 'Logout'];
@@ -43,10 +44,9 @@ function Navbar() {
   };
 
   return (
-    <AppBar position="static" sx={{ backgroundColor: 'black' }}>
-      <Container maxWidth="xl">
+    <AppBar position="static">
+      <Container maxWidth={false} sx={{ height: '72px', backgroundColor: 'black' }}>
         <Toolbar disableGutters>
-          <AdbIcon sx={{ display: { xs: 'none', md: 'flex' }, mr: 1 }} />
           <Typography
             variant="h6"
             noWrap
@@ -62,7 +62,7 @@ function Navbar() {
               textDecoration: 'none',
             }}
           >
-            LOGO
+            {TITLE}
           </Typography>
 
           <Box sx={{ flexGrow: 1, display: { xs: 'flex', md: 'none' } }}>
@@ -101,7 +101,6 @@ function Navbar() {
               ))}
             </Menu>
           </Box>
-          <AdbIcon sx={{ display: { xs: 'flex', md: 'none' }, mr: 1 }} />
           <Typography
             variant="h5"
             noWrap
@@ -118,7 +117,7 @@ function Navbar() {
               textDecoration: 'none',
             }}
           >
-            LOGO
+            {TITLE}
           </Typography>
           <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
             {pages.map((page) => (
