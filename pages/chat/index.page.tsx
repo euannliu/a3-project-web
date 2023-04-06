@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import axios from 'axios'
 import { Howl, Howler } from 'howler'
 import { useAudioRecorder } from 'react-audio-voice-recorder';
@@ -75,6 +75,8 @@ export default function Chat() {
   const [alerts, setAlerts] = useState<Alerts[]>([])
   const [audioDom, setAudioDom] = useState<Howl | null>(null);
 
+  const inputRef = useRef<HTMLInputElement>(null)
+
   const {
     startRecording,
     stopRecording,
@@ -100,19 +102,28 @@ export default function Chat() {
     if (recordingBlob) onSendRecording(recordingBlob)
   }, [recordingBlob])
 
+  useEffect(() => {
+    inputRef.current?.focus()
+  }, [loading])
+
   const onSendRecording = async (audio: Blob) => {
-    const content = await getTranscription(audio)
-    const newMessage: Message = {
-      role: 'user',
-      content,
-      datetime: new Date()
+    try {
+      const content = await getTranscription(audio)
+      const newMessage: Message = {
+        role: 'user',
+        content,
+        datetime: new Date()
+      }
+      onSend(newMessage)
+    } catch (err) {
+      createAlert('Something went wrong with transcribing your voice.', 'error')
+      console.warn(err)
     }
-    onSend(newMessage)
   }
 
   const onSend = async (message: Message) => {
     if (!loading && message && message.content){
-      if (audioDom) audioDom.stop()
+      if (audioDom && audioDom.playing()) audioDom.stop()
 
       let text = ''
       const newMessages = [message, ...messages]
@@ -151,7 +162,9 @@ export default function Chat() {
       <div style={{ display: 'flex', flexDirection: 'column-reverse' }}>
         <div style={{ display: 'flex', flexDirection: 'row' }}>
           <TextField 
+            autoFocus
             disabled={isRecording || loading}
+            inputRef={inputRef}
             label={ isRecording ? "Recording..." : "Type and [ENTER]!" }
             variant="filled" 
             fullWidth
@@ -183,6 +196,8 @@ export default function Chat() {
                 startRecording()
               }
             }}
+            // onMouseDown={startRecording}
+            // onMouseUp={stopRecording}
             sx={{ margin: '0 8px 0 8px' }}
           >
             <MicIcon fontSize='large'/>
