@@ -3,13 +3,14 @@ import { ReactNode } from 'react';
 import { Card } from '@mui/material'
 
 interface MainCardProps {
+  height: string;
   children?: ReactNode;
 }
 
-export default function MainCard({ children }: MainCardProps) {
+export default function MainCard({ height, children }: MainCardProps) {
   return (
     <div style={{ 
-      height: 'calc(100vh - 72px)',
+      height: `calc(${height} - 72px)`,
       padding: '3% 10% 3% 10%' 
     }}>
       <Card sx={{ 
