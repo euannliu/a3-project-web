@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { useRouter } from 'next/router'
 import axios from 'axios'
 import { Howl, Howler } from 'howler'
 import { useAudioRecorder } from 'react-audio-voice-recorder';
@@ -31,8 +32,8 @@ const getTranscription = async (audio: Blob): Promise<string> => {
   return result.data || ''
 }
 
-const getReply = async (messages: ChatCompletionRequestMessage[]): Promise<string> => {
-  const result = await axios.post('/api/chat', { messages })
+const getReply = async (messages: ChatCompletionRequestMessage[], character: string): Promise<string> => {
+  const result = await axios.post('/api/chat', { messages, character })
   const reply = result.data
   if (!reply) {
     throw new Error('No response from AI')
@@ -40,8 +41,8 @@ const getReply = async (messages: ChatCompletionRequestMessage[]): Promise<strin
   return reply
 }
 
-const textToSpeech = async (text: string): Promise<Howl> => {
-  const result = await axios.post('/api/voice/playHt', { text })
+const textToSpeech = async (text: string, character: string): Promise<Howl> => {
+  const result = await axios.post('/api/voice/playHt', { text, character })
     const audio = result.data
   
     if (!audio) {
@@ -69,11 +70,14 @@ const convertChatHistory = (messages: Message[]): ChatCompletionRequestMessage[]
 }
 
 export default function Chat() {
+  const router = useRouter()
+  const { character } = router.query
+
   const [messages, setMessages] = useState<Message[]>([])
   const [loading, setLoading] = useState<boolean>(false)
   const [chatboxText, setChatboxText] = useState<string>('')
   const [alerts, setAlerts] = useState<Alerts[]>([])
-  const [audioDom, setAudioDom] = useState<Howl | null>(null);
+  const [audioDom, setAudioDom] = useState<Howl | null>(null)
 
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -131,7 +135,7 @@ export default function Chat() {
       setLoading(true)
   
       try {
-        text = await getReply(convertChatHistory(newMessages))
+        text = await getReply(convertChatHistory(newMessages), character as string)
         const replyMessage: Message = {
           role: 'assistant',
           content: text,
@@ -139,7 +143,7 @@ export default function Chat() {
         }
         if (text) {
           try {
-            const audio = await textToSpeech(text)
+            const audio = await textToSpeech(text, character as string)
             audio.play()
             setAudioDom(audio)
           } catch (err) {

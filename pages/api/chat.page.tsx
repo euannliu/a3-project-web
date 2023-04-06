@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { Configuration, ChatCompletionRequestMessage, OpenAIApi } from 'openai'
+import characters from './characterPrompts'
 
 const configuration = new Configuration({
   organization: process.env.OPENAI_ORGANIZATION || '',
@@ -7,22 +8,12 @@ const configuration = new Configuration({
 })
 const client = new OpenAIApi(configuration)
 
-const systemPrompt = `
-  You will behave like a friendly person and act very casual. 
-  You will respond with one sentence only. 
-  You will give your opinions and feelings, and you will never break character. 
-  You will set your temperature to 0.8.
-  You will not refer to yourself as an AI Language Model.
-  Your name is Amy.
-  You will use slang.
-  You will speak informally.
-`
 const OPEN_AI_MODEL = 'gpt-3.5-turbo'
-const SYSTEM_PROMPT: ChatCompletionRequestMessage = { role: 'system' , content: systemPrompt}
 
-const chatApi = async (messages: ChatCompletionRequestMessage[]) => {
+const chatApi = async (messages: ChatCompletionRequestMessage[], character: string) => {
   try {
-    const preparedMessages = [SYSTEM_PROMPT, ...messages]
+    const prompt: ChatCompletionRequestMessage = { role: 'system' , content: characters[character].prompt }
+    const preparedMessages = [prompt, ...messages]
     const result = await client.createChatCompletion({ model: OPEN_AI_MODEL, messages: preparedMessages })
     return result.data.choices[0]?.message?.content
   } catch (err) {
@@ -36,10 +27,10 @@ export default async function handler(
 ) {
   if (req.method === 'POST') {
     try {
-      if (!req.body.messages) {
+      if (!req.body.messages || !req.body.character) {
         res.status(400).json('Missing required parameters.')
       } else {
-        const result = await chatApi(req.body.messages)
+        const result = await chatApi(req.body.messages, req.body.character)
         if (!result) {
           throw new Error('No response from Chat API')
         }

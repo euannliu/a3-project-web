@@ -3,13 +3,13 @@ import axios from 'axios'
 
 import { sleep } from '../../../components/sleep'
 
-const englishVoice = 'en-US-SaraNeural'
+import characters from '../characterPrompts'
 
-const voiceApi = async (text: string) => {
+const voiceApi = async (text: string, character: string) => {
   try {
     const body = {
       content: [text],
-      voice: englishVoice
+      voice: characters[character].voice
     }
     const headers =  { 
       'content-type': 'application/json',
@@ -44,10 +44,10 @@ export default async function handler(
 ) {
   if (req.method === 'POST') {
     try {
-      if (!req.body.text) {
+      if (!req.body.text || !req.body.character) {
         res.status(400).json('Missing required parameters.')
       } else {
-        const result = await voiceApi(req.body.text)
+        const result = await voiceApi(req.body.text, req.body.character)
         if (!result) {
           throw new Error('No response from Voice API')
         }
