@@ -12,11 +12,14 @@ const voiceApi = async (text: string) => {
       }
     }
     const headers =  { 
+      'accept': 'audio/mpeg',
       'content-type': 'application/json',
       'xi-api-key': process.env.ELEVENLABS_API_KEY || ''
     }
-    const result = await axios.post<Buffer>(`https://api.elevenlabs.io/v1/text-to-speech/${ELEVENLABS_VOICE_ID}`, body, { headers })
-    return result.data
+    const result = await axios.post(`https://api.elevenlabs.io/v1/text-to-speech/${ELEVENLABS_VOICE_ID}`, body, { headers })
+    const buf = Buffer.from(result.data, 'binary')
+    const base64 = buf.toString('base64')
+    return base64
   } catch (err) {
     console.warn(err)
   }
@@ -28,11 +31,15 @@ export default async function handler(
 ) {
   if (req.method === 'POST') {
     try {
-      const result = await voiceApi(req.body.text)
-      if (!result) {
-        throw new Error('No response from Voice API')
+      if (!req.body.text) {
+        res.status(400).json('Missing required parameters.')
+      } else {
+        const result = await voiceApi(req.body.text)
+        if (!result) {
+          throw new Error('No response from Voice API')
+        }
+        res.status(200).json(result)
       }
-      res.status(200).json(result)
     } catch (err) {
       console.warn(err)
       res.status(500).json('Internal Server Error.')

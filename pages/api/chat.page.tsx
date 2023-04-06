@@ -6,8 +6,19 @@ const configuration = new Configuration({
   apiKey: process.env.OPENAI_API_KEY || '',
 })
 const client = new OpenAIApi(configuration)
+
+const systemPrompt = `
+  You will behave like a friendly person and act very casual. 
+  You will respond with one sentence only. 
+  You will give your opinions and feelings, and you will never break character. 
+  You will set your temperature to 0.8.
+  You will not refer to yourself as an AI Language Model.
+  Your name is Amy.
+  You will use slang.
+  You will speak informally.
+`
 const OPEN_AI_MODEL = 'gpt-3.5-turbo'
-const SYSTEM_PROMPT: ChatCompletionRequestMessage = { role: 'system' , content: 'You are friendly and provide short concise answers. You are casual and conversational.' }
+const SYSTEM_PROMPT: ChatCompletionRequestMessage = { role: 'system' , content: systemPrompt}
 
 const chatApi = async (messages: ChatCompletionRequestMessage[]) => {
   try {
@@ -25,11 +36,15 @@ export default async function handler(
 ) {
   if (req.method === 'POST') {
     try {
-      const result = await chatApi(req.body.messages)
-      if (!result) {
-        throw new Error('No response from Chat API')
+      if (!req.body.messages) {
+        res.status(400).json('Missing required parameters.')
+      } else {
+        const result = await chatApi(req.body.messages)
+        if (!result) {
+          throw new Error('No response from Chat API')
+        }
+        res.status(200).json(result)
       }
-      res.status(200).json(result)
     } catch (err) {
       console.warn(err)
       res.status(500).json('Internal Server Error.')

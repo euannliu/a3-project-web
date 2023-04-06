@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import axios from 'axios'
+import { Howl } from 'howler'
+
 import {
   Alert,
   Button,
@@ -25,6 +27,25 @@ const getReply = async (messages: ChatCompletionRequestMessage[]): Promise<strin
   return reply
 }
 
+const textToSpeech = async (text: string): Promise<Howl> => {
+  const result = await axios.post('/api/voice/playHt', { text })
+    const audio = result.data
+  
+    if (!audio) {
+      throw new Error('Nothing returned from Voice API')
+    }
+
+    return new Howl({
+      // src: [`data:audio/mp3;base64,${audio}`],  // For ElevenLabs
+      src: audio,
+      volume: 1,
+      autoplay: true,
+      loop: false,
+      format: 'mp3'
+    });
+
+}
+
 const convertChatHistory = (messages: Message[]): ChatCompletionRequestMessage[] => {
   return messages.map<ChatCompletionRequestMessage>(message => { 
     return {
@@ -39,7 +60,7 @@ export default function Chat() {
   const [loading, setLoading] = useState<boolean>(false)
   const [chatboxText, setChatboxText] = useState<string>('')
   const [alerts, setAlerts] = useState<Alerts[]>([])
-  // const [chatVoice, setChatVoice] = useState<Sound | undefined>(undefined)
+  const [audioDom, setAudioDom] = useState<Howl | null>(null);
 
   const createAlert = (content: string, severity: 'info' | 'success' | 'warning' | 'error') => {
     const newAlerts = [...alerts, { content, severity }]
@@ -58,21 +79,27 @@ export default function Chat() {
   const onSend = async (message: Message) => {
     if (!loading){
       let text = ''
-
       const newMessages = [message, ...messages]
-
       setMessages(newMessages)
       setLoading(true)
   
       try {
         text = await getReply(convertChatHistory(newMessages))
-
         const replyMessage: Message = {
           role: 'assistant',
           content: text,
           datetime: new Date()
         }
-
+        if (text) {
+          try {
+            const audio = await textToSpeech(text)
+            audio.play()
+            setAudioDom(audio)
+          } catch (err) {
+            createAlert('Something went wrong with the speech audio.', 'error')
+            console.warn(err)
+          }
+        }
         setMessages([replyMessage, ...newMessages])
       } catch (err) {
         createAlert('Something went wrong with the reply.', 'error')
@@ -80,29 +107,6 @@ export default function Chat() {
       } finally {
         setLoading(false)
       }
-
-      // if (text) {
-      //   try {
-      //     const audio = await elevenLabsApiTestWrapper(text)
-      //     const path = binaryToBlob('audio/mpeg', audio)
-      //     console.log('path:', path)
-          
-      //     const sound = new Sound(path, '', (error) => {
-      //       if (error) {
-      //         console.warn('Unable to read chat voice audio', error);
-      //         return;
-      //       }
-      //     });
-      //     setChatVoice(sound)
-      //     sound.play(success => {
-      //       if (!success) {
-      //         console.warn('Chat Voice Audio playback failed');
-      //       }
-      //     });
-      //   } catch (err) {
-      //     console.warn(err)
-      //   }
-      // }
     }
   }
 
