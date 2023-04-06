@@ -15,9 +15,13 @@ const darkTheme = createTheme({
 export default function App({ Component, pageProps }: AppProps) {
   const [height, setHeight] = useState<string>('100vh')
 
+  const handleResize = () => setHeight(`${window.innerHeight}px`);
+
   useEffect(() => {
     setHeight(`${window.innerHeight}px`)
-  })
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [handleResize])
 
   return (
     <ThemeProvider theme={darkTheme}>
