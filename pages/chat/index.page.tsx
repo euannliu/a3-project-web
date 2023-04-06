@@ -107,7 +107,7 @@ export default function Chat() {
   }
 
   return (
-    <Paper sx={{ width: '100%', padding: '8px', display: 'flex', flexDirection: 'column-reverse', justifyContent: 'space-between' }}>
+    <Paper sx={{ width: '100%', padding: '8px', display: 'flex', flexDirection: 'column-reverse', justifyContent: 'space-between', overflow: 'auto' }}>
       <div style={{ display: 'flex', flexDirection: 'column-reverse' }}>
         <div style={{ display: 'flex', flexDirection: 'row' }}>
           <TextField 
@@ -139,23 +139,23 @@ export default function Chat() {
           <br/>
           { loading ? <LinearProgress sx={{ width: '50%' }}/> : '' }
         </div>
+        <Stack sx={{ width: '100%' }} spacing={2}>
+          { alerts.map((alert, index) => (
+              <Alert 
+                key={index}
+                severity={alert.severity}
+                onClose={() => {
+                  deleteAlert(index)
+                }}
+              >
+                {alert.content}
+              </Alert>
+          ))}
+        </Stack>
         { messages.map((message, index) => (
           <MessageBox key={index} {...message} />
         ))}
       </div>
-      <Stack sx={{ width: '100%' }} spacing={2}>
-        { alerts.map((alert, index) => (
-            <Alert 
-              key={index}
-              severity={alert.severity}
-              onClose={() => {
-                deleteAlert(index)
-              }}
-            >
-              {alert.content}
-            </Alert>
-        ))}
-      </Stack>
     </Paper>
   )
 }
