@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import axios from 'axios'
-import { Howl } from 'howler'
+import { Howl, Howler } from 'howler'
 
 import {
   Alert,
@@ -17,6 +17,8 @@ import { ChatCompletionRequestMessage } from 'openai'
 
 import MessageBox from './messagebox'
 import { Alerts, Message } from './types'
+
+Howler.autoUnlock = true
 
 const getReply = async (messages: ChatCompletionRequestMessage[]): Promise<string> => {
   const result = await axios.post('/api/chat', { messages })
@@ -41,7 +43,7 @@ const textToSpeech = async (text: string): Promise<Howl> => {
       volume: 1,
       autoplay: true,
       loop: false,
-      format: 'mp3'
+      format: 'mp3',
     });
 
 }

@@ -12,9 +12,9 @@ import { Message } from './types'
 
 export default function MessageBox({ role, content, datetime }: Message) {
   const direction = useMemo(() => role === 'user' ? 'row-reverse' : 'row', [role])
-  const closeTheGap = '-24px'
+  const closeTheGap = '-20px'
   return (
-    <Card sx={{ display: 'flex', flexDirection: 'column', marginTop: closeTheGap }}>
+    <Card sx={{ display: 'flex', flexDirection: 'column', marginTop: closeTheGap, border: 'none', boxShadow: 'none' }}>
       <div style={{ display: 'flex', flexDirection: direction }}>
         <CardHeader
           avatar={
