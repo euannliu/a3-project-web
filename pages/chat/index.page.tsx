@@ -3,6 +3,7 @@ import axios from 'axios'
 import {
   Alert,
   Button,
+  LinearProgress,
   Paper,
   Stack,
   TextField 
@@ -110,6 +111,7 @@ export default function Chat() {
       <div style={{ display: 'flex', flexDirection: 'column-reverse' }}>
         <div style={{ display: 'flex', flexDirection: 'row' }}>
           <TextField 
+            disabled={loading}
             label="Type and [ENTER]!" 
             variant="filled" 
             fullWidth
@@ -129,9 +131,13 @@ export default function Chat() {
               }
             }}
           />
-          <Button size='large' color='primary' variant="outlined" sx={{ margin: '0 8px 0 8px' }}>
+          <Button disabled={loading} size='large' color='primary' variant="outlined" sx={{ margin: '0 8px 0 8px' }}>
             <MicIcon fontSize='large'/>
           </Button>
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'center' }}>
+          <br/>
+          { loading ? <LinearProgress sx={{ width: '50%' }}/> : '' }
         </div>
         { messages.map((message, index) => (
           <MessageBox key={index} {...message} />
