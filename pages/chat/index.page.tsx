@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import axios from 'axios'
 import { Howl, Howler } from 'howler'
+import { useAudioRecorder } from 'react-audio-voice-recorder';
 
 import {
   Alert,
@@ -19,6 +20,16 @@ import MessageBox from './messagebox'
 import { Alerts, Message } from './types'
 
 Howler.autoUnlock = true
+
+const getTranscription = async (audio: Blob): Promise<string> => {
+  const headers =  { 
+    'content-type': 'multipart/form-data',
+  }
+  const form = new FormData()
+  form.append('file', audio, 'audio.mp3')
+  const result = await axios.post('/api/transcription', form, { headers })
+  return result.data || ''
+}
 
 const getReply = async (messages: ChatCompletionRequestMessage[]): Promise<string> => {
   const result = await axios.post('/api/chat', { messages })
@@ -64,6 +75,13 @@ export default function Chat() {
   const [alerts, setAlerts] = useState<Alerts[]>([])
   const [audioDom, setAudioDom] = useState<Howl | null>(null);
 
+  const {
+    startRecording,
+    stopRecording,
+    recordingBlob,
+    isRecording,
+  } = useAudioRecorder();
+
   const createAlert = (content: string, severity: 'info' | 'success' | 'warning' | 'error') => {
     const newAlerts = [...alerts, { content, severity }]
     if (newAlerts.length > 3) {
@@ -78,8 +96,24 @@ export default function Chat() {
     setAlerts(newAlerts)
   }
 
+  useEffect(() => {
+    if (recordingBlob) onSendRecording(recordingBlob)
+  }, [recordingBlob])
+
+  const onSendRecording = async (audio: Blob) => {
+    const content = await getTranscription(audio)
+    const newMessage: Message = {
+      role: 'user',
+      content,
+      datetime: new Date()
+    }
+    onSend(newMessage)
+  }
+
   const onSend = async (message: Message) => {
-    if (!loading){
+    if (!loading && message && message.content){
+      if (audioDom) audioDom.stop()
+
       let text = ''
       const newMessages = [message, ...messages]
       setMessages(newMessages)
@@ -117,8 +151,8 @@ export default function Chat() {
       <div style={{ display: 'flex', flexDirection: 'column-reverse' }}>
         <div style={{ display: 'flex', flexDirection: 'row' }}>
           <TextField 
-            disabled={loading}
-            label="Type and [ENTER]!" 
+            disabled={isRecording || loading}
+            label={ isRecording ? "Recording..." : "Type and [ENTER]!" }
             variant="filled" 
             fullWidth
             value={chatboxText}
@@ -137,7 +171,20 @@ export default function Chat() {
               }
             }}
           />
-          <Button disabled={loading} size='large' color='primary' variant="outlined" sx={{ margin: '0 8px 0 8px' }}>
+          <Button 
+            disabled={loading} 
+            size='large' 
+            color={isRecording ? 'secondary' : 'primary'}
+            variant="outlined" 
+            onClick={() => {
+              if (isRecording) {
+                stopRecording()
+              } else {
+                startRecording()
+              }
+            }}
+            sx={{ margin: '0 8px 0 8px' }}
+          >
             <MicIcon fontSize='large'/>
           </Button>
         </div>
