@@ -3,7 +3,7 @@ import axios from 'axios'
 
 import { sleep } from '../../../components/sleep'
 
-import characters from '../characterPrompts'
+import characters from '../../../components/characterPrompts'
 
 const voiceApi = async (text: string, character: string) => {
   try {

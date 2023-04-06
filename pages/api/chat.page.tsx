@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { Configuration, ChatCompletionRequestMessage, OpenAIApi } from 'openai'
-import characters from './characterPrompts'
+import characters from '../../components/characterPrompts'
 
 const configuration = new Configuration({
   organization: process.env.OPENAI_ORGANIZATION || '',

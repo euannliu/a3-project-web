@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/router'
 import axios from 'axios'
 import { Howl, Howler } from 'howler'
-import { useAudioRecorder } from 'react-audio-voice-recorder';
+import { useAudioRecorder } from 'react-audio-voice-recorder'
 
 import {
   Alert,
@@ -19,6 +19,7 @@ import { ChatCompletionRequestMessage } from 'openai'
 
 import MessageBox from './messagebox'
 import { Alerts, Message } from './types'
+import characters from '../../components/characterPrompts'
 
 Howler.autoUnlock = true
 
@@ -109,7 +110,7 @@ export default function Chat() {
   useEffect(() => {
     inputRef.current?.focus()
   }, [loading])
-
+  
   const onSendRecording = async (audio: Blob) => {
     try {
       const content = await getTranscription(audio)
@@ -167,7 +168,7 @@ export default function Chat() {
         <div style={{ display: 'flex', flexDirection: 'row' }}>
           <TextField 
             autoFocus
-            disabled={isRecording || loading}
+            disabled={isRecording || loading || !characters[character as string]}
             inputRef={inputRef}
             label={ isRecording ? "Recording..." : "Type and [ENTER]!" }
             variant="filled" 
@@ -189,7 +190,7 @@ export default function Chat() {
             }}
           />
           <Button 
-            disabled={loading} 
+            disabled={loading || !characters[character as string]} 
             size='large' 
             color={isRecording ? 'secondary' : 'primary'}
             variant="outlined" 
@@ -212,6 +213,16 @@ export default function Chat() {
           { loading ? <LinearProgress sx={{ width: '50%' }}/> : '' }
         </div>
         <Stack sx={{ width: '100%' }} spacing={2}>
+          {
+            !characters[character as string] ?
+              <Alert
+                severity='error'
+              >
+                Invalid character.
+              </Alert>
+            :
+              ''
+          }
           { alerts.map((alert, index) => (
               <Alert 
                 key={index}

@@ -15,7 +15,7 @@ import MenuItem from '@mui/material/MenuItem';
 
 const TITLE = 'A3-PROJECT'
 
-const pages = ['Chat', 'Chat/Amy', 'Chat/Lucia', 'Chat/Chad', 'Chat/Ben', 'Chat/Honey', 'Pricing'];
+const pages = ['Chat', 'Pricing'];
 const settings = ['Profile', 'Account', 'Dashboard', 'Logout'];
 
 function Navbar() {
