@@ -51,7 +51,6 @@ const textToSpeech = async (text: string, character: string): Promise<Howl> => {
     }
 
     return new Howl({
-      // src: [`data:audio/mp3;base64,${audio}`],  // For ElevenLabs
       src: audio,
       volume: 1,
       autoplay: true,
